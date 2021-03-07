@@ -1,0 +1,1124 @@
+---
+title: "Local Regression"
+date: 
+output: 
+  revealjs::revealjs_presentation:
+    transition: none
+    theme: solarized
+    highlight: kate
+    center: true
+    fig_width: 12
+    fig_height: 8
+    self_contained: False
+    reveal_plugins: ["menu",'zoom']
+    reveal_options:
+      slideNumber: true
+    menu:
+        side: right
+---
+
+
+```{r,echo=FALSE,results='hide',warning=FALSE,message=FALSE,cache=TRUE}
+#install.packages('revealjs')
+library('revealjs')
+```
+
+##  1. Data 
+\
+\
+
+$$Y_i=sinX_i+\epsilon_i$$ \
+
+$$X_i \sim \mbox{N}(0,2)$$ \
+$$\epsilon_i\sim \mbox{N}(0,1)$$ \
+
+## 2. Nadaraya-Waston kernel estimator 
+
+```{r}
+## kernel function
+k_f=function(u){
+  return(dnorm(u,0,1))}
+```
+
+
+
+```{r}
+
+### Nadaraya-Waston-kernel-estimator
+Nadaraya_Waston=function(X_new,h,k_f,X,Y){
+  Y_new=0  
+  for(i in 1:length(X_new)){
+    Y_new[i]=(k_f((X_new[i]-X)/h)%*%matrix(Y,n,1))/sum(k_f((X_new[i]-X)/h))
+  } 
+  result=list(Y_new=Y_new,X_new=X_new,h=h)
+  return(result)
+}
+
+```
+
+## about n....
+
+
+## n=50
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+n=50
+X=rnorm(n,mean=0,sd=2)
+e=rnorm(n,mean=0,sd=1)
+Y=sin(X)+e  
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot(n=50)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+
+
+h=c(1.5,1,0.5,0.1,0.05)
+color=list('blue','indianred1','mediumorchid3','salmon3','bisque1')
+
+for(j in 1:5){
+  ##
+  Y_new=0
+  X_new=seq(min(X),max(X),0.1)
+  
+  NW=Nadaraya_Waston(X_new,h[j],k_f,X,Y)
+
+  data=cbind(NW$X_new,NW$Y_new)[order(NW$X_new),]
+  lines(data[,1],data[,2],col=color[[j]],lwd=2)
+}
+
+
+
+legend(2,-2, c("y=sin(X)",'h=1.5','h=1','h=0.5','h=0.1','h=0.05'),text.col=c('gray70','blue','indianred1','mediumorchid3','salmon3','bisque1'))
+
+```
+
+## n=100
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+n=100
+X=rnorm(n,mean=0,sd=2)
+e=rnorm(n,mean=0,sd=1)
+Y=sin(X)+e  
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot(n=100)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+
+
+h=c(1.5,1,0.5,0.1,0.05)
+color=list('blue','indianred1','mediumorchid3','salmon3','bisque1')
+
+for(j in 1:5){
+  ##
+  Y_new=0
+  X_new=seq(min(X),max(X),0.1)
+  
+  NW=Nadaraya_Waston(X_new,h[j],k_f,X,Y)
+
+  data=cbind(NW$X_new,NW$Y_new)[order(NW$X_new),]
+  lines(data[,1],data[,2],col=color[[j]],lwd=2)
+}
+
+
+
+legend(2,-2, c("y=sin(X)",'h=1.5','h=1','h=0.5','h=0.1','h=0.05'),text.col=c('gray70','blue','indianred1','mediumorchid3','salmon3','bisque1'))
+```
+
+## n=200
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+n=200
+X=rnorm(n,mean=0,sd=2)
+e=rnorm(n,mean=0,sd=1)
+Y=sin(X)+e  
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot(n=200)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+
+
+h=c(1.5,1,0.5,0.1,0.05)
+color=list('blue','indianred1','mediumorchid3','salmon3','bisque1')
+
+for(j in 1:5){
+  ##
+  Y_new=0
+  X_new=seq(min(X),max(X),0.1)
+  
+  NW=Nadaraya_Waston(X_new,h[j],k_f,X,Y)
+
+  data=cbind(NW$X_new,NW$Y_new)[order(NW$X_new),]
+  lines(data[,1],data[,2],col=color[[j]],lwd=2)
+}
+
+
+
+legend(2,-2, c("y=sin(X)",'h=1.5','h=1','h=0.5','h=0.1','h=0.05'),text.col=c('gray70','blue','indianred1','mediumorchid3','salmon3','bisque1'))
+
+```
+
+## remark 
+<p align="left">The risk of the Nadaraya-Watson kernel estimator</p>
+\
+$$\tiny  R(\hat{r}_n,r)=\color{DarkRed}{\frac{h^4_n}{4}\left(\int x^2 K(X) dx\right)^2\int\left(r^{\prime\prime}(x)+\color{DarkOrange}{\overset{design \; bias}{\overset{\uparrow}{\color{DarkOrange}{2r^{\prime}(x)\frac{f^{\prime}(x)}{f(x)}}}}}\right)^2dx} + \frac{\sigma^2 \int K^2(x)dx}{n h_n}\int\frac{1}{f(x)}dx+O(n h_n^{-1})+O(h^4_n)
+$$
+<p align="left">
+
+* $\small R(\hat{r}_n,r)\;$ will not converge to 0, when $\;\small n \to \infty$ \ 
+<p></p>
+<font size=5.8>
+   + bias 跟 n 無關 \
+   + $\small R(\hat{r}_n,r)\to\; 0\;$ , as $\;\small h_n \to 0\;$ and$\small\; nh_n\to\infty$ \
+   + Use cross validation to choose $\;\small h$ \
+   + leave-one-out  or  GCV  or  $\;\small h=C n^{-\frac{-1}{5}}$ \
+</font>   
+*  kernel estimators have high bias near the boundaries.\
+<font size=5.8>
+   * reduce these biases by using local ploynomial
+   regression\
+</font> 
+</p>
+
+## 3. Local ploynomial regression
+
+
+```{r}
+#### Local ploynomial regression
+local_ploy_reg=function(X_new,k_f,h,X,Y,p){
+  
+  n=length(X)
+  r_x=0
+  for(i in 1:length(X_new)){
+    
+    #############################
+    #   X_x   
+    #   W_x  
+    X_x=matrix(NaN,n,(p+1)) # X_x 
+    W_x=diag(NaN,n,n) # W_x 
+    
+    
+    for(r in 1:n){
+      
+      for(c in 1:(p+1)){
+        X_x[r,c]=(((X[r]-X_new[i])^(c-1))/factorial(c-1))
+      }
+      
+      W_x[r,r]=k_f((X[r]-X_new[i])/h)
+    }  
+    ##################################
+    # 例外處理
+    
+    
+    tryCatch({
+      
+      ### l(x).trans
+      e_T=append(1,rep(0,p))
+      l_X_T=e_T%*%solve(t(X_x)%*% W_x%*%X_x)%*%t(X_x)%*%W_x
+      
+      ### r(x)
+      r_x[i]= l_X_T%*%Y
+      
+      ### L --smoothing matr
+      
+    },error = function(err) {
+      print(paste("ERROR:  ",err)) 
+      print(i)
+    })
+  }
+  result=list(X=X,Y=Y,r_x=r_x,X_new=X_new)
+  return(result)
+}
+
+```
+
+
+##  about p... 
+
+##  Local ploynomial regression (<font color=#800000>p=0</font>、n=50)
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+
+n=50
+X=rnorm(n,mean=0,sd=2)
+e=rnorm(n,mean=0,sd=1)
+Y=sin(X)+e  
+p=0
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot(n=50)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+
+
+h=c(1.5,1,0.5,0.1,0.05)
+color=list('blue','indianred1','mediumorchid3','salmon3','bisque1')
+
+for(j in 1:5){
+  ##
+  Y_new=0
+  X_new=seq(min(X),max(X),0.1)
+  
+  req=local_ploy_reg(X_new,k_f,h[j],X,Y,p)
+
+  data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+  lines(data[,1],data[,2],col=color[[j]],lwd=2)
+}
+
+
+legend(2,-2, c("y=sin(X)",'h=1.5','h=1','h=0.5','h=0.1','h=0.05'),text.col=c('gray70','blue','indianred1','mediumorchid3','salmon3','bisque1'))
+
+```
+
+------
+
+##  Local ploynomial regression (<font color=#800000>p=1</font>、n=50)
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+
+n=50
+#X=rnorm(n,mean=0,sd=2)
+#e=rnorm(n,mean=0,sd=1)
+#Y=sin(X)+e  
+p=1
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot(n=50)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+
+
+h=c(1.5,1,0.5,0.1,0.05)
+color=list('blue','indianred1','mediumorchid3','salmon3','bisque1')
+
+for(j in 1:5){
+  ##
+  Y_new=0
+  X_new=seq(min(X),max(X),0.1)
+  
+  req=local_ploy_reg(X_new,k_f,h[j],X,Y,p)
+
+  data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+  lines(data[,1],data[,2],col=color[[j]],lwd=2)
+}
+
+
+
+legend(2,-2, c("y=sin(X)",'h=1.5','h=1','h=0.5','h=0.1','h=0.05'),text.col=c('gray70','blue','indianred1','mediumorchid3','salmon3','bisque1'))
+
+
+```
+
+##  Local ploynomial regression (<font color=#800000>p=2</font>、n=50)
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+
+n=50
+#X=rnorm(n,mean=0,sd=2)
+#e=rnorm(n,mean=0,sd=1)
+#Y=sin(X)+e  
+p=2
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot(n=50)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+
+
+h=c(1.5,1,0.5,0.1,0.05)
+color=list('blue','indianred1','mediumorchid3','salmon3','bisque1')
+
+for(j in 1:5){
+  ##
+  Y_new=0
+  X_new=seq(min(X),max(X),0.1)
+  
+  req=local_ploy_reg(X_new,k_f,h[j],X,Y,p)
+
+  data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+  lines(data[,1],data[,2],col=color[[j]],lwd=2)
+}
+
+
+
+legend(2,-2, c("y=sin(X)",'h=1.5','h=1','h=0.5','h=0.1','h=0.05'),text.col=c('gray70','blue','indianred1','mediumorchid3','salmon3','bisque1'))
+
+
+
+```
+
+##  Local ploynomial regression (<font color=#800000>p=0</font>、n=100)
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+n=100
+X=rnorm(n,mean=0,sd=2)
+e=rnorm(n,mean=0,sd=1)
+Y=sin(X)+e  
+p=0
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot(n=100)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+
+
+h=c(1.5,1,0.5,0.1,0.05)
+color=list('blue','indianred1','mediumorchid3','salmon3','bisque1')
+
+for(j in 1:5){
+  ##
+  Y_new=0
+  X_new=seq(min(X),max(X),0.1)
+  
+  req=local_ploy_reg(X_new,k_f,h[j],X,Y,p)
+
+  data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+  lines(data[,1],data[,2],col=color[[j]],lwd=2)
+}
+
+
+
+legend(2,-2, c("y=sin(X)",'h=1.5','h=1','h=0.5','h=0.1','h=0.05'),text.col=c('gray70','blue','indianred1','mediumorchid3','salmon3','bisque1'))
+
+
+
+```
+
+##  Local ploynomial regression (<font color=#800000>p=1</font>、n=100)
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+n=100
+#X=rnorm(n,mean=0,sd=2)
+#e=rnorm(n,mean=0,sd=1)
+#Y=sin(X)+e  
+p=1
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot(n=100)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+
+
+h=c(1.5,1,0.5,0.1,0.05)
+color=list('blue','indianred1','mediumorchid3','salmon3','bisque1')
+
+for(j in 1:5){
+  ##
+  Y_new=0
+  X_new=seq(min(X),max(X),0.1)
+  
+  req=local_ploy_reg(X_new,k_f,h[j],X,Y,p)
+
+  data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+  lines(data[,1],data[,2],col=color[[j]],lwd=2)
+}
+
+
+
+legend(2,-2, c("y=sin(X)",'h=1.5','h=1','h=0.5','h=0.1','h=0.05'),text.col=c('gray70','blue','indianred1','mediumorchid3','salmon3','bisque1'))
+
+
+
+```
+
+##  Local ploynomial regression (<font color=#800000>p=2</font>、n=100)
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+n=100
+#X=rnorm(n,mean=0,sd=2)
+#e=rnorm(n,mean=0,sd=1)
+#Y=sin(X)+e  
+p=2
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot(n=100)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+
+
+h=c(1.5,1,0.5,0.1,0.05)
+color=list('blue','indianred1','mediumorchid3','salmon3','bisque1')
+
+for(j in 1:5){
+  ##
+  Y_new=0
+  X_new=seq(min(X),max(X),0.1)
+  
+  req=local_ploy_reg(X_new,k_f,h[j],X,Y,p)
+
+  data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+  lines(data[,1],data[,2],col=color[[j]],lwd=2)
+}
+
+
+
+legend(2,-2, c("y=sin(X)",'h=1.5','h=1','h=0.5','h=0.1','h=0.05'),text.col=c('gray70','blue','indianred1','mediumorchid3','salmon3','bisque1'))
+
+
+
+```
+
+
+##  Local ploynomial regression (<font color=#800000>p=0</font>、n=200)
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+n=200
+X=rnorm(n,mean=0,sd=2)
+e=rnorm(n,mean=0,sd=1)
+Y=sin(X)+e  
+p=0
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot(n=200)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+h=c(1.5,1,0.5,0.1,0.05)
+color=list('blue','indianred1','mediumorchid3','salmon3','bisque1')
+
+for(j in 1:5){
+  ##
+  Y_new=0
+  X_new=seq(min(X),max(X),0.1)
+  
+  req=local_ploy_reg(X_new,k_f,h[j],X,Y,p)
+
+  data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+  lines(data[,1],data[,2],col=color[[j]],lwd=2)
+}
+
+
+
+legend(2,-2, c("y=sin(X)",'h=1.5','h=1','h=0.5','h=0.1','h=0.05'),text.col=c('gray70','blue','indianred1','mediumorchid3','salmon3','bisque1'))
+
+
+
+```
+
+##  Local ploynomial regression (<font color=#800000>p=1</font>、n=200)
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+n=200
+#X=rnorm(n,mean=0,sd=2)
+#e=rnorm(n,mean=0,sd=1)
+#Y=sin(X)+e  
+p=1
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot(n=200)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+
+
+h=c(1.5,1,0.5,0.1,0.05)
+color=list('blue','indianred1','mediumorchid3','salmon3','bisque1')
+
+for(j in 1:5){
+  ##
+  Y_new=0
+  X_new=seq(min(X),max(X),0.1)
+  
+  req=local_ploy_reg(X_new,k_f,h[j],X,Y,p)
+
+  data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+  lines(data[,1],data[,2],col=color[[j]],lwd=2)
+}
+
+
+
+legend(2,-2, c("y=sin(X)",'h=1.5','h=1','h=0.5','h=0.1','h=0.05'),text.col=c('gray70','blue','indianred1','mediumorchid3','salmon3','bisque1'))
+
+
+
+```
+
+##  Local ploynomial regression (<font color=#800000>p=2</font>、n=200)
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+n=200
+#X=rnorm(n,mean=0,sd=2)
+#e=rnorm(n,mean=0,sd=1)
+#Y=sin(X)+e  
+p=2
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot(n=200)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+
+
+h=c(1.5,1,0.5,0.1,0.05)
+color=list('blue','indianred1','mediumorchid3','salmon3','bisque1')
+
+for(j in 1:5){
+  ##
+  Y_new=0
+  X_new=seq(min(X),max(X),0.1)
+  
+  req=local_ploy_reg(X_new,k_f,h[j],X,Y,p)
+
+  data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+  lines(data[,1],data[,2],col=color[[j]],lwd=2)
+}
+
+
+
+legend(2,-2, c("y=sin(X)",'h=1.5','h=1','h=0.5','h=0.1','h=0.05'),text.col=c('gray70','blue','indianred1','mediumorchid3','salmon3','bisque1'))
+
+
+
+```
+
+## how to choose h
+
+##  leave-one-out cross validation score 
+
+$$CV=\hat{R}(h)=\frac{1}{n}\sum_{i=1}^{n}\left(Y_i-\hat{r}_{(-i)}(x_i)\right)^2$$
+```{r}
+#### Local ploynomial regression with cv_1
+local_ploy_reg.cv_1=function(X,Y,local_ploy_reg,h){
+  
+  R=0
+  for(k in 1 :length(X)){
+    data=cbind(X,Y) 
+    X_d1=data[-k,] 
+    req=local_ploy_reg(X[k],k_f,h,X_d1[,1],X_d1[,2],p)
+    # RISK
+    R[k]=(Y[k]-req$r_x)^2
+  }
+  
+  cv_score=mean(R)
+  result=list(cv_score=cv_score,h=h)
+  return(result)
+  
+}
+```
+
+## n=200、p=1 、choose h=?
+
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
+# data
+set.seed(123)
+n=200
+X=rnorm(n,mean=0,sd=2)
+e=rnorm(n,mean=0,sd=1)
+Y=sin(X)+e  
+p=1
+```
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide',cache=TRUE}
+
+############### choose h #################
+h=seq(0,1.5,.01)
+h_list=0
+risk_list=0
+
+for(j in 1:length(h)){
+  req_cv=local_ploy_reg.cv_1(X,Y,local_ploy_reg,h[j])
+  h_list[j]=req_cv$h
+  risk_list[j]=req_cv$cv_score
+}
+
+plot(h_list,risk_list,xlab = 'h',ylab = 'CV score',main='leave-one-out CV', type = "l",col='cyan4',lwd=2)
+points(h[which.min(risk_list)],min(risk_list),col='coral2',pch=20,cex=2)
+text(h[which.min(risk_list)],min(risk_list)+(max(risk_list)/10),paste('h=',h[which.min(risk_list)],'  cv=',round(min(risk_list),3)))
+
+```
+
+## n=200、p=1
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hold',cache=TRUE}
+print(paste('h=',h[which.min(risk_list)]))
+```
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide',cache=TRUE}
+
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot(leave-one-out CV)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+
+##############################
+
+h_cv1=h[which.min(risk_list)]
+score_cv1=min(risk_list)
+
+
+Y_new=0
+X_new=seq(min(X),max(X),0.1)
+req=local_ploy_reg(X_new,k_f,h_cv1,X,Y,p)
+data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+lines(data[,1],data[,2],col='cornflowerblue',lwd=2)
+text(-4,4,paste('h=',h[which.min(risk_list)],'  cv=',round(min(risk_list),3)),col = 'cornflowerblue')
+
+```
+
+
+##  generalized cross validation score 
+
+$$v=tr(L)$$
+$$GCV(h)=\sum_{i=1}^{n}\left(\frac{Y_i-\hat{r}_n(x_i)}{1-\frac{v}{n}}\right)^2$$
+```{r}
+#### GCV
+
+local_ploy_reg_GCV=function(k_f,h,X,Y,p){
+  
+  X_new=X
+  n=length(X)
+  r_x=0
+  L=matrix(NaN,n,n)
+  
+  
+  for(i in 1:length(X_new)){
+    
+    #############################
+    #   X_x   
+    #   W_x  
+    X_x=matrix(NaN,n,(p+1)) # X_x 
+    W_x=diag(NaN,n,n) # W_x 
+    
+    
+    for(r in 1:n){
+      
+      for(c in 1:(p+1)){
+        X_x[r,c]=(((X[r]-X_new[i])^(c-1))/factorial(c-1))
+      }
+      
+      W_x[r,r]=k_f((X[r]-X_new[i])/h)
+    }  
+    ##################################
+    # 例外處理
+    
+    
+    tryCatch({
+      
+      ### l(x).trans
+      e_T=append(1,rep(0,p))
+      l_X_T=e_T%*%solve(t(X_x)%*% W_x%*%X_x)%*%t(X_x)%*%W_x
+      
+      ### r(x)
+      r_x[i]= l_X_T%*%Y
+      
+      ### L --smoothing matrix
+      L[i,]=l_X_T
+    },error = function(err) {
+      print(paste("ERROR:  ",err)) 
+      print(i)
+    })
+    
+  }
+  tryCatch({
+    
+  GCV_value=mean(((Y-r_x)/(1-(sum(diag(L))/n)))^2)
+  
+  },error = function(err) {
+    print(paste("ERROR:  ",err)) 
+    print(i)
+  })
+  
+  
+  result=list(h=h,GCV_value=GCV_value)
+  return(result)
+}
+```
+
+
+
+## n=200、p=1 、choose h=?
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide',cache=TRUE}
+
+
+############### choose h #################
+h=seq(0,1.5,.01)
+h_list=0
+risk_list=0
+
+for(j in 1:length(h)){
+  req_gcv=local_ploy_reg_GCV(k_f,h[j],X,Y,p)
+  h_list[j]=req_gcv$h
+  risk_list[j]=req_gcv$GCV_value
+}
+
+
+plot(h_list,risk_list,xlab = 'h',ylab = 'cv score',main='Generalized CV ', type = "l",col='cyan4',lwd=2)
+
+points(h[which(risk_list==min(risk_list, na.rm = TRUE))],min(risk_list,na.rm = TRUE),col='coral2',pch=20,cex=2)
+
+text(h[which(risk_list==min(risk_list, na.rm = TRUE))],
+     min(risk_list,na.rm = TRUE)+(max(risk_list,na.rm = TRUE)/50),
+     paste('h=',h[which(risk_list==min(risk_list, na.rm = TRUE))],'  CV=',round(min(risk_list,na.rm = TRUE),3)))
+
+```
+
+
+## n=200、p=1
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hold',cache=TRUE}
+print(paste('h=',h[which(risk_list==min(risk_list, na.rm = TRUE))]))
+```
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide',cache=TRUE}
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot(Generalized CV)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+
+##############################
+
+h_gcv=h[which(risk_list==min(risk_list, na.rm = TRUE))]
+score_gcv=min(risk_list, na.rm = TRUE)
+  
+Y_new=0
+X_new=seq(min(X),max(X),0.1)
+req=local_ploy_reg(X_new,k_f,h_gcv,X,Y,p)
+data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+lines(data[,1],data[,2],col='hotpink3',lwd=2)
+text(0,4,paste('h=',h[which(risk_list==min(risk_list, na.rm = TRUE))],'  CV=',round(min(risk_list,na.rm = TRUE),3)),col = 'hotpink3')
+
+```
+
+
+## <font color=#800000>leave-one-out</font>  v.s. <font color="#000066">GCV</font>(n=200、p=1)
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide',cache=TRUE}
+### data
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot( n=200、p=1)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+
+#############################################
+
+Y_new=0
+X_new=seq(min(X),max(X),0.1)
+req=local_ploy_reg(X_new,k_f,h_cv1,X,Y,p)
+data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+lines(data[,1],data[,2],col='cornflowerblue',lwd=2)
+
+
+##########################################
+
+Y_new=0
+X_new=seq(min(X),max(X),0.1)
+req=local_ploy_reg(X_new,k_f,h_gcv,X,Y,p)
+data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+lines(data[,1],data[,2],col='hotpink3',lwd=2)
+
+########################################
+
+
+
+legend(1,-4,c('y=sinx',paste('h=',h_cv1,'  CV=',round(score_cv1,3),'(CV_1)'),   paste('h=',h_gcv,'  CV=',round(score_gcv,3),'(GCV)')),
+text.col=c('gray70','cornflowerblue','hotpink3'),cex=1.4)
+
+
+```
+
+##
+
+$h=C n^{\frac{-1}{5}}$
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide',cache=TRUE}
+
+### data
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot( n=200、p=1)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+
+
+C=c(1,2,5,10)
+color=list('blue','indianred1','mediumorchid3','salmon3')
+
+for(j in 1:4){
+  ##
+  Y_new=0
+  h=C[j]*(n)^(-1/5)
+  X_new=seq(min(X),max(X),0.1)
+  
+  req=local_ploy_reg(X_new,k_f,h,X,Y,p)
+
+  data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+  lines(data[,1],data[,2],col=color[[j]],lwd=2)
+}
+
+
+
+legend(2,-2, c("y=sin(X)",paste('C=1','h=',round(1*(n)^(-1/5),3)),paste('C=2','h=',round(2*(n)^(-1/5),3)),paste('C=5','h=',round(5*(n)^(-1/5),3)),paste('C=10','h=',round(10*(n)^(-1/5)),3)),text.col=c('gray70','blue','indianred1','mediumorchid3','salmon3'))
+
+```
+
+
+
+## about p & h
+
+
+## n=200、p=0 & p=1 ( fix h=1.5、1 )
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide',cache=TRUE}
+
+n=200
+X=rnorm(n,mean=0,sd=2)
+e=rnorm(n,mean=0,sd=1)
+Y=sin(X)+e  
+```
+
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide',cache=TRUE}
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot(n=200)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+###################################
+h=c(1.5,1)
+color1=list('dodgerblue4','orangered2')
+color2=list('lightskyblue','salmon1')
+
+#p=0
+p=0
+for(j in 1:2){
+  ##
+  Y_new=0
+  X_new=seq(min(X),max(X),0.1)
+  
+  req=local_ploy_reg(X_new,k_f,h[j],X,Y,p)
+  
+  data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+  lines(data[,1],data[,2],col=color1[[j]],lwd=2)
+}
+
+p=1
+for(j in 1:2){
+  ##
+  Y_new=0
+  X_new=seq(min(X),max(X),0.1)
+  
+  req=local_ploy_reg(X_new,k_f,h[j],X,Y,p)
+  
+  data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+  lines(data[,1],data[,2],col=color2[[j]],lwd=2)
+}
+
+
+legend(2,-2, c("y=sin(X)",'p=0、h=1.5','p=0、h=1','p=1、h=1.5','p=1、h=1'),text.col=c('gray70','dodgerblue4','orangered2','lightskyblue','salmon1'))
+
+```
+
+
+## n=200、p=0、1、2、3 ( fix h=1 )
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide',cache=TRUE}
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot(n=200)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+###################################
+h=1
+color1=list('dodgerblue4','orangered2')
+color2=list('lightskyblue','salmon1')
+
+#p=0
+p=0
+for(j in 1:1){
+  ##
+  Y_new=0
+  X_new=seq(min(X),max(X),0.1)
+  
+  req=local_ploy_reg(X_new,k_f,h[j],X,Y,p)
+  
+  data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+  lines(data[,1],data[,2],col='dodgerblue4',lwd=2)
+}
+
+p=1
+for(j in 1:1){
+  ##
+  Y_new=0
+  X_new=seq(min(X),max(X),0.1)
+  
+  req=local_ploy_reg(X_new,k_f,h[j],X,Y,p)
+  
+  data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+  lines(data[,1],data[,2],col='orangered2',lwd=2)
+}
+
+
+p=2
+for(j in 1:1){
+  ##
+  Y_new=0
+  X_new=seq(min(X),max(X),0.1)
+  
+  req=local_ploy_reg(X_new,k_f,h[j],X,Y,p)
+  
+  data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+  lines(data[,1],data[,2],col='lightskyblue',lwd=2)
+}
+
+
+
+p=3
+for(j in 1:1){
+  ##
+  Y_new=0
+  X_new=seq(min(X),max(X),0.1)
+  
+  req=local_ploy_reg(X_new,k_f,h[j],X,Y,p)
+  
+  data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+  lines(data[,1],data[,2],col='salmon1',lwd=2)
+}
+
+
+
+
+legend(2,-2, c("y=sin(X)",'p=0、h=1','p=1、h=1','p=2、h=1','p=3、h=1'),text.col=c('gray70','dodgerblue4','orangered2','lightskyblue','salmon1'))
+
+```
+
+## n=200 、p=0 & p=1 (USE GCV SCORE TO CHOOSE THE BEST H)
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide',cache=TRUE}
+
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot(n=200)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+
+############### choose h #################
+
+#p=0
+
+h=seq(0,1.5,.01)
+p=0
+h_list=0
+risk_list=0
+
+for(j in 1:length(h)){
+  req_gcv=local_ploy_reg_GCV(k_f,h[j],X,Y,p)
+  h_list[j]=req_gcv$h
+  risk_list[j]=req_gcv$GCV_value}
+
+h_gcv_p_0=h[which(risk_list==min(risk_list, na.rm = TRUE))]
+score_gcv_p_0= min(risk_list, na.rm = TRUE)
+
+############# fit #############################
+
+Y_new=0
+X_new=seq(min(X),max(X),0.1)
+req=local_ploy_reg(X_new,k_f,h_gcv_p_0,X,Y,p)
+data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+lines(data[,1],data[,2],col='orangered',lwd=2)
+
+
+# p=1
+
+h=seq(0,1.5,.01)
+p=1
+h_list=0
+risk_list=0
+
+for(j in 1:length(h)){
+  req_gcv=local_ploy_reg_GCV(k_f,h[j],X,Y,p)
+  h_list[j]=req_gcv$h
+  risk_list[j]=req_gcv$GCV_value}
+
+h_gcv_p_1=h[which(risk_list==min(risk_list, na.rm = TRUE))]
+score_gcv_p_1= min(risk_list, na.rm = TRUE)
+
+############# fit #############################
+
+Y_new=0
+X_new=seq(min(X),max(X),0.1)
+req=local_ploy_reg(X_new,k_f,h_gcv_p_1,X,Y,p)
+data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+lines(data[,1],data[,2],col='pink4',lwd=2)
+
+
+# p=2
+
+h=seq(0,1.5,.01)
+p=2
+h_list=0
+risk_list=0
+
+for(j in 1:length(h)){
+  req_gcv=local_ploy_reg_GCV(k_f,h[j],X,Y,p)
+  h_list[j]=req_gcv$h
+  risk_list[j]=req_gcv$GCV_value}
+
+h_gcv_p_2=h[which(risk_list==min(risk_list, na.rm = TRUE))]
+score_gcv_p_2= min(risk_list, na.rm = TRUE)
+
+############# fit #############################
+
+
+# p=3
+
+h=seq(0,1.5,.01)
+p=3
+h_list=0
+risk_list=0
+
+for(j in 1:length(h)){
+  req_gcv=local_ploy_reg_GCV(k_f,h[j],X,Y,p)
+  h_list[j]=req_gcv$h
+  risk_list[j]=req_gcv$GCV_value}
+
+h_gcv_p_3=h[which(risk_list==min(risk_list, na.rm = TRUE))]
+score_gcv_p_3= min(risk_list, na.rm = TRUE)
+
+############# fit #############################
+
+
+
+
+###########################
+legend(2,-3,c('y=sinx',paste('p=0','h=',h_gcv_p_0,' GCV=',round(score_gcv_p_0,3)),paste('p=1','h=',h_gcv_p_1,' GCV=',round(score_gcv_p_1,3))),text.col = c('gray70','orangered','pink4'))
+
+```
+
+
+## n=200 、p=0、1、2、3 (USE GCV SCORE TO CHOOSE THE BEST H)
+```{r,echo=FALSE,warning=FALSE,message=FALSE,results='hide',cache=TRUE}
+
+
+plot(X,Y,xlab = "x",ylab = "Y",main = "Scatter plot(n=200)",xlim = c(min(X), max(X)),ylim=c(-6,6),pch=20)
+eq = function(X){sin(X)}
+curve(eq, from=min(X),to=max(X),add = TRUE,lwd=4,col='gray70')
+
+############### choose h #################
+
+#p=0
+
+Y_new=0
+X_new=seq(min(X),max(X),0.1)
+req=local_ploy_reg(X_new,k_f,h_gcv_p_0,X,Y,p)
+data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+lines(data[,1],data[,2],col='orangered',lwd=2)
+
+
+# p=1
+
+
+Y_new=0
+X_new=seq(min(X),max(X),0.1)
+req=local_ploy_reg(X_new,k_f,h_gcv_p_1,X,Y,p)
+data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+lines(data[,1],data[,2],col='pink4',lwd=2)
+
+
+# p=2
+
+
+Y_new=0
+X_new=seq(min(X),max(X),0.1)
+req=local_ploy_reg(X_new,k_f,h_gcv_p_2,X,Y,p)
+data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+lines(data[,1],data[,2],col='royalblue1',lwd=2)
+
+
+
+# p=3
+
+
+Y_new=0
+X_new=seq(min(X),max(X),0.1)
+req=local_ploy_reg(X_new,k_f,h_gcv_p_3,X,Y,p)
+data=cbind(req$X_new,req$r_x)[order(req$X_new),]
+lines(data[,1],data[,2],col='palegreen4',lwd=2)
+
+
+###########################
+legend(2,-3,c('y=sinx',paste('p=0','h=',h_gcv_p_0,' GCV=',round(score_gcv_p_0,3)),paste('p=1','h=',h_gcv_p_1,' GCV=',round(score_gcv_p_1,3)),paste('p=2','h=',h_gcv_p_2,' GCV=',round(score_gcv_p_2,3)),paste('p=3','h=',h_gcv_p_3,' GCV=',round(score_gcv_p_3,3))),text.col = c('gray70','orangered','pink4','royalblue1','palegreen4'))
+
+```
+
